@@ -2,9 +2,10 @@ import pygame
 import random
 import os
 
+
 WIDTH = 1000
 HEIGHT = 700
-FPS = 60
+FPS = 30
 
 # Задаем цвета
 WHITE = (255, 255, 255)
@@ -107,9 +108,10 @@ def get_random_spawn():
 pygame.init()
 pygame.mixer.init()
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
-pygame.display.set_caption("!")
+pygame.display.set_caption("Tower Defense")
 clock = pygame.time.Clock()
 all_sprites = pygame.sprite.Group()
+sprites_map = pygame.sprite.Group()
 
 game_folder = os.path.dirname(__file__)
 img_folder = os.path.join(game_folder, 'img')
@@ -310,44 +312,52 @@ for track_y in range(len(track)):
     for track_x in range(len(track[0])):
         tmp_tile = track[track_y][track_x]
         if tmp_tile == 0:
-            all_sprites.add(TileForest())
+            sprites_map.add(TileForest())
         if tmp_tile == 1:
-            all_sprites.add(TileSpawn())
+            sprites_map.add(TileSpawn())
         if tmp_tile == 2:
-            all_sprites.add(TileEscape())
+            sprites_map.add(TileEscape())
         if tmp_tile == 3:
-            all_sprites.add(TilePathway())
+            sprites_map.add(TilePathway())
         if tmp_tile == 4:
-            all_sprites.add(TileDamage())
+            sprites_map.add(TileDamage())
         if tmp_tile == 5:
-            all_sprites.add(TilePointerRight())
+            sprites_map.add(TilePointerRight())
         if tmp_tile == 6:
-            all_sprites.add(TilePointerLeft())
+            sprites_map.add(TilePointerLeft())
         if tmp_tile == 7:
-            all_sprites.add(TilePointerUp())
+            sprites_map.add(TilePointerUp())
         if tmp_tile == 8:
-            all_sprites.add(TilePointerDown())
+            sprites_map.add(TilePointerDown())
 all_sprites.add(SpriteSoldier())
 
 
-# Цикл игры
-running = True
-while running:
-    # Держим цикл на правильной скорости
-    clock.tick(FPS)
-    # Ввод процесса (события)
-    for event in pygame.event.get():
-        # проверка для закрытия окна
-        if event.type == pygame.QUIT:
-            running = False
+class GameLoop:
+    """ Основной цикл игры"""
+    @staticmethod
+    def run():
+        running = True
+        while running:
+            # Держим цикл на правильной скорости
+            clock.tick(FPS)
 
-    # Обновление
-    all_sprites.update()
+            # Ввод процесса (события)
+            for event in pygame.event.get():
+                # проверка для закрытия окна
+                if event.type == pygame.QUIT:
+                    running = False
+            # Обновление
+            all_sprites.update()
 
-    # Рендеринг
-    screen.fill(WHITE)
-    all_sprites.draw(screen)
-    # После отрисовки всего, переворачиваем экран
-    pygame.display.flip()
+            ''' Рендеринг '''
+            # Чтобы не выглядело вырвиглазно
+            screen.fill(WHITE)
+            sprites_map.draw(screen)
+            all_sprites.draw(screen)
 
-pygame.quit()
+            # После отрисовки всего, переворачиваем экран
+            pygame.display.flip()
+        pygame.quit()
+
+
+GameLoop().run()
