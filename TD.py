@@ -241,23 +241,25 @@ class SpriteSoldier(pygame.sprite.Sprite):
     """ Солдат """
 
     def __init__(self):
-        # Создаем спрайт
+        # Создание спрайта
         pygame.sprite.Sprite.__init__(self)
         self.image = pygame.image.load(os.path.join(img_folder, 'sprite.soldier.png')).convert()
         self.image.set_colorkey(WHITE)
         self.rect = self.image.get_rect()
+
         # Х; Y; скорость, должна быть множителем 50 для корректной работы
         self.speed = [1, 0, 2]
         self.rect.x = get_random_spawn()[0]
         self.rect.y = get_random_spawn()[1]
-
         self.hp_max = 2
         self.hp_current = self.hp_max
+        self.width = 50
+        self.height = 8
+
+        # Создание полоски здоровья
         self.hp_bar = HpBar()
         all_sprites.add(self.hp_bar)
-
         self.current_hp_bar = CurrentHpBar()
-
         all_sprites.add(self.current_hp_bar)
 
     def update(self):
@@ -269,49 +271,38 @@ class SpriteSoldier(pygame.sprite.Sprite):
         if tile_index(self.rect.x, self.rect.y) == 4:
             self.hp_current -= 1
 
-        self.hp_bar.set_values(self.rect.x, self.rect.y, self.hp_max)
+        self.hp_bar.set_values(self.rect.x, self.rect.y, self.width, self.height)
         self.current_hp_bar.set_values(self.rect.x, self.rect.y, 8, self.hp_current, self.hp_max)
         # Умерли/ пошли весь путь
         if tile_index(self.rect.x, self.rect.y) == 2 or self.hp_current == 0:
+            all_sprites.remove(self.hp_bar, self.current_hp_bar)
             self.kill()
 
 
 class HpBar(pygame.sprite.Sprite):
-
+    """ Полоска здоровья 1-я часть """
     def __init__(self):
         pygame.sprite.Sprite.__init__(self)
-        self.width = 50
-        self.height = 8
-        self.image = pygame.Surface((self.width, self.height))
+
+    def set_values(self, x: int, y: int, width: int, height: int):
+        self.image = pygame.Surface((width, height))
         self.image.fill(RED)
         self.rect = self.image.get_rect()
-        self.rect.x = 0
-        self.rect.y = 0
-        self.hp = 0
-
-    def set_values(self, x: int, y: int, hp_max: int):
         self.rect.x = x
-        self.rect.y = y + 2
+        self.rect.y = y + 1
 
 
 class CurrentHpBar(pygame.sprite.Sprite):
-
+    """ Полоска здоровья 2-я часть """
     def __init__(self):
         pygame.sprite.Sprite.__init__(self)
-        self.width, self.height = 10, 10
-        self.image = pygame.Surface((self.width, self.height))
-        self.image.fill(GREEN)
-        self.rect = self.image.get_rect()
-        self.rect.x, self.rect.y = 0, 0
 
     def set_values(self, x: int, y: int, height: int, hp_current: int, hp_max: int):
-        self.height = height
-        self.width = (hp_current / hp_max) * 50
-        self.image = pygame.Surface((self.width, self.height))
+        self.image = pygame.Surface(((hp_current / hp_max) * 50, height))
         self.image.fill(GREEN)
         self.rect = self.image.get_rect()
         self.rect.x = x
-        self.rect.y = y + 2
+        self.rect.y = y + 1
 
 
 # Создание карты
@@ -360,4 +351,3 @@ while running:
     pygame.display.flip()
 
 pygame.quit()
-
