@@ -25,17 +25,20 @@ GREY = (128, 128, 128)
 7 - тайл указателя, верх
 8 - тайл указателя, низ
 '''
-
 track = [
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 1, 3, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 3, 0, 3, 3, 3, 3, 3, 0],
-    [0, 0, 3, 0, 3, 0, 0, 0, 3, 0],
-    [0, 0, 5, 3, 4, 0, 3, 3, 8, 0],
-    [0, 0, 3, 0, 0, 0, 3, 0, 3, 0],
-    [0, 1, 3, 3, 3, 3, 4, 0, 2, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-]
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 1, 3, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 3, 0, 3, 3, 3, 3, 3, 0],
+            [0, 0, 3, 0, 3, 0, 0, 0, 3, 0],
+            [0, 0, 5, 3, 4, 0, 3, 3, 8, 0],
+            [0, 0, 3, 0, 0, 0, 3, 0, 3, 0],
+            [0, 1, 3, 3, 3, 3, 4, 0, 2, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+        ]
+
+
+
+
 
 
 # Создаём игру и окно
@@ -118,121 +121,76 @@ def get_random_spawn():
 ''' Конструктор карты '''
 
 
-class TileSpawn(pygame.sprite.Sprite):
+class TileRoot(pygame.sprite.Sprite):
+    def __init__(self, x: int, y: int):
+        pygame.sprite.Sprite.__init__(self)
+        self.image = pygame.Surface((0, 0))
+        self.rect = self.image.get_rect()
+        self.rect.x = 50 * x
+        self.rect.y = 50 * y
+
+
+class TileSpawn(TileRoot):
     """ Тайл начала пути """
-
     def __init__(self, x: int, y: int):
-        # Создаем спрайт
-        pygame.sprite.Sprite.__init__(self)
+        super().__init__(x, y)
         self.image = pygame.image.load(os.path.join(img_folder, 'tile.spawn.png')).convert()
-        self.rect = self.image.get_rect()
-        # Помещаем в нужное место
-        self.rect.x = 50 * x
-        self.rect.y = 50 * y
 
 
-class TileEscape(pygame.sprite.Sprite):
+class TileEscape(TileRoot):
     """ Тайл конца пути """
-
     def __init__(self, x: int, y: int):
-        # Создаем спрайт
-        pygame.sprite.Sprite.__init__(self)
+        super().__init__(x, y)
         self.image = pygame.image.load(os.path.join(img_folder, 'tile.escape.png')).convert()
-        self.rect = self.image.get_rect()
-        # Помещаем в нужное место
-        self.rect.x = 50 * x
-        self.rect.y = 50 * y
 
 
-class TileForest(pygame.sprite.Sprite):
+class TileForest(TileRoot):
     """ Тайл фона """
-
     def __init__(self, x: int, y: int):
-        # Создаем спрайт
-        pygame.sprite.Sprite.__init__(self)
+        super().__init__(x, y)
         self.image = pygame.image.load(os.path.join(img_folder, 'tile.forest.png')).convert()
-        self.rect = self.image.get_rect()
-        # Помещаем в нужное место
-        self.rect.x = 50 * x
-        self.rect.y = 50 * y
 
 
-class TilePathway(pygame.sprite.Sprite):
+class TilePathway(TileRoot):
     """ Тайл пути """
-
     def __init__(self, x: int, y: int):
-        # Создаем спрайт
-        pygame.sprite.Sprite.__init__(self)
+        super().__init__(x, y)
         self.image = pygame.image.load(os.path.join(img_folder, 'tile.pathway.png')).convert()
-        self.rect = self.image.get_rect()
-        # Помещаем в нужное место
-        self.rect.x = 50 * x
-        self.rect.y = 50 * y
 
 
-class TileDamage(pygame.sprite.Sprite):
+class TileDamage(TileRoot):
     """ Тайл, наносящий урон """
-
     def __init__(self, x: int, y: int):
-        # Создаем спрайт
-        pygame.sprite.Sprite.__init__(self)
+        super().__init__(x, y)
         self.image = pygame.image.load(os.path.join(img_folder, 'tile.damage.png')).convert()
-        self.rect = self.image.get_rect()
-        # Помещаем в нужное место
-        self.rect.x = 50 * x
-        self.rect.y = 50 * y
 
 
-class TilePointerRight(pygame.sprite.Sprite):
+class TilePointerRight(TileRoot):
     """ Указатель, право """
-
     def __init__(self, x: int, y: int):
-        # Создаем спрайт
-        pygame.sprite.Sprite.__init__(self)
+        super().__init__(x, y)
         self.image = pygame.image.load(os.path.join(img_folder, 'tile.pointer.right.png')).convert()
-        self.rect = self.image.get_rect()
-        # Помещаем в нужное место
-        self.rect.x = 50 * x
-        self.rect.y = 50 * y
 
 
-class TilePointerLeft(pygame.sprite.Sprite):
+class TilePointerLeft(TileRoot):
     """ Указатель, лево """
-
     def __init__(self, x: int, y: int):
-        # Создаем спрайт
-        pygame.sprite.Sprite.__init__(self)
+        super().__init__(x, y)
         self.image = pygame.image.load(os.path.join(img_folder, 'tile.pointer.left.png')).convert()
-        self.rect = self.image.get_rect()
-        # Помещаем в нужное место
-        self.rect.x = 50 * x
-        self.rect.y = 50 * y
 
 
-class TilePointerUp(pygame.sprite.Sprite):
+class TilePointerUp(TileRoot):
     """ Указатель, верх """
-
     def __init__(self, x: int, y: int):
-        # Создаем спрайт
-        pygame.sprite.Sprite.__init__(self)
+        super().__init__(x, y)
         self.image = pygame.image.load(os.path.join(img_folder, 'tile.pointer.up.png')).convert()
-        self.rect = self.image.get_rect()
-        # Помещаем в нужное место
-        self.rect.x = 50 * x
-        self.rect.y = 50 * y
 
 
-class TilePointerDown(pygame.sprite.Sprite):
+class TilePointerDown(TileRoot):
     """ Указатель, низ """
-
     def __init__(self, x: int, y: int):
-        # Создаем спрайт
-        pygame.sprite.Sprite.__init__(self)
+        super().__init__(x, y)
         self.image = pygame.image.load(os.path.join(img_folder, 'tile.pointer.down.png')).convert()
-        self.rect = self.image.get_rect()
-        # Помещаем в нужное место
-        self.rect.x = 50 * x
-        self.rect.y = 50 * y
 
 
 ''' Конструктор юнитов '''
@@ -324,10 +282,9 @@ class Map:
                 sprites_map.add(TilePointerDown(__x, __y)) if tmp_tile == 8 else None
 
 
-class GameLoop:
+class Game:
     """ Основной цикл игры"""
-    @staticmethod
-    def run():
+    def run(self):
         Map().map_creator()
         all_sprites.add(SpriteSoldier())
         running = True
@@ -354,4 +311,4 @@ class GameLoop:
         pygame.quit()
 
 
-GameLoop().run()
+Game().run()
