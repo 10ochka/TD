@@ -36,10 +36,7 @@ track = [
             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
         ]
 
-
-
-
-
+tick = 0
 
 # Создаём игру и окно
 pygame.init()
@@ -47,11 +44,34 @@ pygame.mixer.init()
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Tower Defense")
 clock = pygame.time.Clock()
-all_sprites = pygame.sprite.Group()
+sprites_units = pygame.sprite.Group()
 sprites_map = pygame.sprite.Group()
-
 game_folder = os.path.dirname(__file__)
 img_folder = os.path.join(game_folder, 'img')
+
+
+class UnitWave:
+    def __init__(self):
+        # [[точка_спавна], [порядок_выхода_юнитов], интервал_между_появлением]
+        self.wave_storage = {
+            '1': [get_random_spawn(), ['Soldier', 'Soldier', 'Soldier'], 0.6]
+        }
+        self.wave_length = 0
+        self.current_unit_spawn = 0
+
+    def wave_creator(self, __wave_index: int):
+        __wave_index = str(__wave_index)
+        __wave_spawnpoint = self.wave_storage[__wave_index][0]
+        self.wave_length = len(self.wave_storage[__wave_index][1])
+        self.current_unit_spawn = 0
+        global tick
+        if self.current_unit_spawn < self.wave_length:
+            if (tick / FPS) == self.wave_storage[__wave_index][2]:
+                if self.wave_storage[__wave_index][1][self.current_unit_spawn] == 'Soldier':
+                    __creating_unit = Soldier(__wave_spawnpoint)
+                    sprites_units.add(__creating_unit)
+                    tick = 0
+                    self.current_unit_spawn += 1
 
 
 def tile_index(tmp_x: int, tmp_y: int):
@@ -196,11 +216,10 @@ class TilePointerDown(TileRoot):
 ''' Конструктор юнитов '''
 
 
-class SpriteSoldier(pygame.sprite.Sprite):
+class Soldier(pygame.sprite.Sprite):
     """ Солдат """
 
-    def __init__(self):
-        # Создание спрайта
+    def __init__(self, __coordinates: list):
         pygame.sprite.Sprite.__init__(self)
         self.image = pygame.image.load(os.path.join(img_folder, 'sprite.soldier.png')).convert()
         self.image.set_colorkey(WHITE)
@@ -208,18 +227,18 @@ class SpriteSoldier(pygame.sprite.Sprite):
 
         # Х; Y; скорость, должна быть множителем 50 для корректной работы
         self.speed = [1, 0, 2]
-        self.rect.x = get_random_spawn()[0]
-        self.rect.y = get_random_spawn()[1]
-        self.hp_max = 2
-        self.hp_current = self.hp_max
         self.width = 50
         self.height = 8
+        self.rect.x = __coordinates[0]
+        self.rect.y = __coordinates[1]
+        self.hp_max = 2
+        self.hp_current = self.hp_max
 
         # Создание полоски здоровья
         self.hp_bar = HpBar()
-        all_sprites.add(self.hp_bar)
+        sprites_units.add(self.hp_bar)
         self.current_hp_bar = CurrentHpBar()
-        all_sprites.add(self.current_hp_bar)
+        sprites_units.add(self.current_hp_bar)
 
     def update(self):
         """ Обновление состояния спрайта """
@@ -234,7 +253,7 @@ class SpriteSoldier(pygame.sprite.Sprite):
         self.current_hp_bar.set_values(self.rect.x, self.rect.y, self.height, self.hp_current, self.hp_max)
         # Умерли/ пошли весь путь
         if tile_index(self.rect.x, self.rect.y) == 2 or self.hp_current == 0:
-            all_sprites.remove(self.hp_bar, self.current_hp_bar)
+            sprites_units.remove(self.hp_bar, self.current_hp_bar)
             self.kill()
 
 
@@ -266,8 +285,7 @@ class CurrentHpBar(pygame.sprite.Sprite):
 
 class Map:
     """ Создание карты """
-    @staticmethod
-    def map_creator():
+    def map_creator(self):
         for __y in range(len(track)):
             for __x in range(len(track[0])):
                 tmp_tile = track[__y][__x]
@@ -286,25 +304,28 @@ class Game:
     """ Основной цикл игры"""
     def run(self):
         Map().map_creator()
-        all_sprites.add(SpriteSoldier())
+
         running = True
         while running:
             # Держим цикл на правильной скорости
             clock.tick(FPS)
-
+            UnitWave().wave_creator(1)
             # Ввод процесса (события)
             for event in pygame.event.get():
                 # проверка для закрытия окна
                 if event.type == pygame.QUIT:
                     running = False
             # Обновление
-            all_sprites.update()
+            sprites_units.update()
 
+            global tick
+            tick += 1
+            print(tick)
             ''' Рендеринг '''
             # Чтобы не выглядело вырвиглазно
             screen.fill(WHITE)
             sprites_map.draw(screen)
-            all_sprites.draw(screen)
+            sprites_units.draw(screen)
 
             # После отрисовки всего, переворачиваем экран
             pygame.display.flip()
