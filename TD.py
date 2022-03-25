@@ -1,3 +1,5 @@
+from abc import abstractmethod
+
 import pygame
 import random
 import os
@@ -128,68 +130,65 @@ class TileRoot(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.rect.x = 50 * x
         self.rect.y = 50 * y
+        self.load()
+
+    @abstractmethod
+    def load(self):
+        """ Загрузка дополнительных параметров """
+        pass
 
 
 class TileSpawn(TileRoot):
     """ Тайл начала пути """
-    def __init__(self, x: int, y: int):
-        super().__init__(x, y)
+    def load(self):
         self.image = pygame.image.load(os.path.join(img_folder, 'tile.spawn.png')).convert()
 
 
 class TileEscape(TileRoot):
     """ Тайл конца пути """
-    def __init__(self, x: int, y: int):
-        super().__init__(x, y)
+    def load(self):
         self.image = pygame.image.load(os.path.join(img_folder, 'tile.escape.png')).convert()
 
 
 class TileForest(TileRoot):
     """ Тайл фона """
-    def __init__(self, x: int, y: int):
-        super().__init__(x, y)
+    def load(self):
         self.image = pygame.image.load(os.path.join(img_folder, 'tile.forest.png')).convert()
 
 
 class TilePathway(TileRoot):
     """ Тайл пути """
-    def __init__(self, x: int, y: int):
-        super().__init__(x, y)
+    def load(self):
         self.image = pygame.image.load(os.path.join(img_folder, 'tile.pathway.png')).convert()
 
 
 class TileDamage(TileRoot):
     """ Тайл, наносящий урон """
-    def __init__(self, x: int, y: int):
-        super().__init__(x, y)
+    def load(self):
         self.image = pygame.image.load(os.path.join(img_folder, 'tile.damage.png')).convert()
 
 
 class TilePointerRight(TileRoot):
     """ Указатель, право """
-    def __init__(self, x: int, y: int):
-        super().__init__(x, y)
+    def load(self):
         self.image = pygame.image.load(os.path.join(img_folder, 'tile.pointer.right.png')).convert()
 
 
 class TilePointerLeft(TileRoot):
     """ Указатель, лево """
-    def __init__(self, x: int, y: int):
-        super().__init__(x, y)
+    def load(self):
         self.image = pygame.image.load(os.path.join(img_folder, 'tile.pointer.left.png')).convert()
 
 
 class TilePointerUp(TileRoot):
     """ Указатель, верх """
-    def __init__(self, x: int, y: int):
-        super().__init__(x, y)
+    def load(self):
         self.image = pygame.image.load(os.path.join(img_folder, 'tile.pointer.up.png')).convert()
 
 
 class TilePointerDown(TileRoot):
     """ Указатель, низ """
-    def __init__(self, x: int, y: int):
-        super().__init__(x, y)
+    def load(self):
         self.image = pygame.image.load(os.path.join(img_folder, 'tile.pointer.down.png')).convert()
 
 
