@@ -56,24 +56,24 @@ class UnitWave:
     def __init__(self):
         # [[точка_спавна], [порядок_выхода_юнитов], интервал_между_появлением]
         self.wave_storage = {
-            '1': [get_random_spawn(), ['Soldier', 'Soldier', 'Soldier'], 0.6]
+            '1': [get_random_spawn(), ['Soldier', 'Soldier', 'Soldier'], 0.6, 2]
         }
-        self.wave_length = 0
-        self.current_unit_spawn = 0
+        self.__wave_length = 0
+        self.__current_unit_spawn = 0
+        self.__spawn_interval = 0
 
     def wave_creator(self, __wave_index: int):
         __wave_index = str(__wave_index)
         __wave_spawnpoint = self.wave_storage[__wave_index][0]
-        self.wave_length = len(self.wave_storage[__wave_index][1])
-        self.current_unit_spawn = 0
+        self.__wave_length = len(self.wave_storage[__wave_index][1])
+        self.__current_unit_spawn = 0
         global tick
-        if self.current_unit_spawn < self.wave_length:
-            if (tick / FPS) == self.wave_storage[__wave_index][2]:
-                if self.wave_storage[__wave_index][1][self.current_unit_spawn] == 'Soldier':
-                    __creating_unit = Soldier(__wave_spawnpoint)
-                    sprites_units.add(__creating_unit)
-                    tick = 0
-                    self.current_unit_spawn += 1
+        if self.__current_unit_spawn < self.__wave_length and (tick / FPS) == self.wave_storage[__wave_index][2]:
+            if self.wave_storage[__wave_index][1][self.__current_unit_spawn] == 'Soldier':
+                __creating_unit = Soldier(__wave_spawnpoint)
+                sprites_units.add(__creating_unit)
+                tick = 0
+                self.__current_unit_spawn += 1
 
 
 def tile_index(tmp_x: int, tmp_y: int):
@@ -146,7 +146,7 @@ def get_random_spawn():
 class TileRoot(pygame.sprite.Sprite):
     def __init__(self, x: int, y: int):
         pygame.sprite.Sprite.__init__(self)
-        self.image = pygame.Surface((0, 0))
+        self.image = pygame.image.load(os.path.join(img_folder, 'tile.stopgap.png')).convert()
         self.rect = self.image.get_rect()
         self.rect.x = 50 * x
         self.rect.y = 50 * y
