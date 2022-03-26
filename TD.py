@@ -66,7 +66,6 @@ class UnitWave:
         __wave_spawnpoint = self.wave_storage[__wave_index][0]
         self.wave_length = len(self.wave_storage[__wave_index][1])
         self.current_unit_spawn = 0
-
         global tick
         if self.current_unit_spawn < self.wave_length:
             if (tick / FPS) == self.wave_storage[__wave_index][2]:
