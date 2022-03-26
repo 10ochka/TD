@@ -39,6 +39,8 @@ track = [
         ]
 
 tick = 0
+current_unit_spawn = 0
+wave = True
 
 # Создаём игру и окно
 pygame.init()
@@ -56,25 +58,48 @@ class UnitWave:
     def __init__(self):
         # [[точка_спавна], [порядок_выхода_юнитов], интервал_между_появлением]
         self.wave_storage = {
-            '1': [get_random_spawn(), ['Soldier', 'Soldier', 'Soldier'], 0.6, 2]
+            '1': [get_random_spawn(), ['Soldier', 'Skeleton', 'Soldier'], 0.6, 2]
         }
         self.__wave_length = 0
-        self.__current_unit_spawn = 0
+
         self.__spawn_interval = 0
 
     def wave_creator(self, __wave_index: int):
+
+        global tick
+        global current_unit_spawn
+
         __wave_index = str(__wave_index)
         __wave_spawnpoint = self.wave_storage[__wave_index][0]
         self.__wave_length = len(self.wave_storage[__wave_index][1])
-        self.__current_unit_spawn = 0
-        global tick
-        if self.__current_unit_spawn < self.__wave_length and (tick / FPS) == self.wave_storage[__wave_index][2]:
-            if self.wave_storage[__wave_index][1][self.__current_unit_spawn] == 'Soldier':
-                __creating_unit = Soldier(__wave_spawnpoint)
-                sprites_units.add(__creating_unit)
-                tick = 0
-                self.__current_unit_spawn += 1
+        global wave
+        if wave or pygame.key.get_pressed()[pygame.K_LEFT]:
+            if current_unit_spawn < self.__wave_length:
+                if (tick / FPS) == self.wave_storage[__wave_index][2]:
+                    if self.wave_storage[__wave_index][1][current_unit_spawn] == 'Soldier':
+                        __creating_unit = Soldier(__wave_spawnpoint)
+                        sprites_units.add(__creating_unit)
+                        tick = 0
 
+                        current_unit_spawn += 1
+
+                    elif self.wave_storage[__wave_index][1][current_unit_spawn] == 'Skeleton':
+                        __creating_unit = Skeleton(__wave_spawnpoint)
+                        sprites_units.add(__creating_unit)
+                        tick = 0
+                        current_unit_spawn += 1
+                    else:
+                        pass
+
+            else:
+                wave = False
+
+        elif pygame.key.get_pressed()[pygame.K_LEFT]:
+            wave = True
+            current_unit_spawn = 0
+
+        else:
+            pass
 
 def tile_index(tmp_x: int, tmp_y: int):
     if tmp_x % 50 == 0 and tmp_y % 50 == 0:
@@ -221,6 +246,47 @@ class Soldier(pygame.sprite.Sprite):
     def __init__(self, __coordinates: list):
         pygame.sprite.Sprite.__init__(self)
         self.image = pygame.image.load(os.path.join(img_folder, 'sprite.soldier.png')).convert()
+        self.image.set_colorkey(WHITE)
+        self.rect = self.image.get_rect()
+
+        # Х; Y; скорость, должна быть множителем 50 для корректной работы
+        self.speed = [1, 0, 2]
+        self.width = 50
+        self.height = 8
+        self.rect.x = __coordinates[0]
+        self.rect.y = __coordinates[1]
+        self.hp_max = 2
+        self.hp_current = self.hp_max
+
+        # Создание полоски здоровья
+        self.hp_bar = HpBar()
+        sprites_units.add(self.hp_bar)
+        self.current_hp_bar = CurrentHpBar()
+        sprites_units.add(self.current_hp_bar)
+
+    def update(self):
+        """ Обновление состояния спрайта """
+        self.speed = move_dir(self.speed, self.rect.x, self.rect.y)
+        self.rect.x += self.speed[0] * self.speed[2]
+        self.rect.y += self.speed[1] * self.speed[2]
+
+        if tile_index(self.rect.x, self.rect.y) == 4:
+            self.hp_current -= 1
+
+        self.hp_bar.set_values(self.rect.x, self.rect.y, self.width, self.height)
+        self.current_hp_bar.set_values(self.rect.x, self.rect.y, self.height, self.hp_current, self.hp_max)
+        # Умерли/ пошли весь путь
+        if tile_index(self.rect.x, self.rect.y) == 2 or self.hp_current == 0:
+            sprites_units.remove(self.hp_bar, self.current_hp_bar)
+            self.kill()
+
+
+class Skeleton(pygame.sprite.Sprite):
+    """ Скелет """
+
+    def __init__(self, __coordinates: list):
+        pygame.sprite.Sprite.__init__(self)
+        self.image = pygame.image.load(os.path.join(img_folder, 'sprite.skeleton.png')).convert()
         self.image.set_colorkey(WHITE)
         self.rect = self.image.get_rect()
 
