@@ -73,14 +73,16 @@ class UnitWave:
         __wave_spawnpoint = self.wave_storage[__wave_index][0]
         self.__wave_length = len(self.wave_storage[__wave_index][1])
         global wave
-        if wave or pygame.key.get_pressed()[pygame.K_LEFT]:
+        if wave:
+
             if current_unit_spawn < self.__wave_length:
+
                 if (tick / FPS) == self.wave_storage[__wave_index][2]:
+
                     if self.wave_storage[__wave_index][1][current_unit_spawn] == 'Soldier':
                         __creating_unit = Soldier(__wave_spawnpoint)
                         sprites_units.add(__creating_unit)
                         tick = 0
-
                         current_unit_spawn += 1
 
                     elif self.wave_storage[__wave_index][1][current_unit_spawn] == 'Skeleton':
@@ -88,18 +90,20 @@ class UnitWave:
                         sprites_units.add(__creating_unit)
                         tick = 0
                         current_unit_spawn += 1
+
                     else:
                         pass
 
             else:
                 wave = False
 
-        elif pygame.key.get_pressed()[pygame.K_LEFT]:
-            wave = True
-            current_unit_spawn = 0
-
         else:
-            pass
+            if pygame.key.get_pressed()[pygame.K_LEFT]:
+                wave = True
+                current_unit_spawn = 0
+                tick = 0
+
+
 
 
 def tile_index(tmp_x: int, tmp_y: int):
