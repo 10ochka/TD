@@ -101,6 +101,7 @@ class UnitWave:
         else:
             pass
 
+
 def tile_index(tmp_x: int, tmp_y: int):
     if tmp_x % 50 == 0 and tmp_y % 50 == 0:
         tmp_x //= 50
@@ -238,6 +239,46 @@ class TilePointerDown(TileRoot):
 
 
 ''' Конструктор юнитов '''
+
+
+class UnitRoot(pygame.sprite.Sprite):
+
+    def __init__(self, __coordinates: list):
+        pygame.sprite.Sprite.__init__(self)
+        self.__bar_width = 50
+        self.__bar_height = 8
+        self.image = pygame.image.load(os.path.join(img_folder, 'tile.stopgap.png')).convert()
+        self.rect = self.image.get_rect()
+        self.speed = [1, 0, 2]
+        self.rect.x = __coordinates[0]
+        self.rect.y = __coordinates[1]
+        self.__hp_max = 2
+        self.__hp_current = self.__hp_max
+        self.__max_hp_bar = HpBar()
+        sprites_units.add(self.__max_hp_bar)
+        self.__current_hp_bar = CurrentHpBar()
+        sprites_units.add(self.__current_hp_bar)
+        self.load()
+
+    def update(self):
+        """ Обновление состояния спрайта """
+        self.speed = move_dir(self.speed, self.rect.x, self.rect.y)
+        self.rect.x += self.speed[0] * self.speed[2]
+        self.rect.y += self.speed[1] * self.speed[2]
+
+        if tile_index(self.rect.x, self.rect.y) == 4:
+            self.__hp_current -= 1
+
+        self.__max_hp_bar.set_values(self.rect.x, self.rect.y, self.__bar_width, self.__bar_height)
+        self.__current_hp_bar.set_values(self.rect.x, self.rect.y, self.__bar_height, self.__hp_current, self.__hp_max)
+        # Умерли/ пошли весь путь
+        if tile_index(self.rect.x, self.rect.y) == 2 or self.__hp_current == 0:
+            sprites_units.remove(self.__max_hp_bar, self.__current_hp_bar)
+            self.kill()
+
+    @abstractmethod
+    def load(self):
+        pass
 
 
 class Soldier(pygame.sprite.Sprite):
