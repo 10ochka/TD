@@ -104,8 +104,6 @@ class UnitWave:
                 tick = 0
 
 
-
-
 def tile_index(tmp_x: int, tmp_y: int):
     if tmp_x % 50 == 0 and tmp_y % 50 == 0:
         tmp_x //= 50
@@ -247,67 +245,28 @@ class TilePointerDown(TileRoot):
 
 class UnitRoot(pygame.sprite.Sprite):
 
-    def __init__(self, __coordinates: list):
+    def __init__(self, coordinates: list):
         pygame.sprite.Sprite.__init__(self)
-        self.__bar_width = 50
-        self.__bar_height = 8
         self.image = pygame.image.load(os.path.join(img_folder, 'tile.stopgap.png')).convert()
         self.rect = self.image.get_rect()
+        self.rect.x = coordinates[0]
+        self.rect.y = coordinates[1]
+
         self.speed = [1, 0, 2]
-        self.rect.x = __coordinates[0]
-        self.rect.y = __coordinates[1]
-        self.__hp_max = 2
-        self.__hp_current = self.__hp_max
-        self.__max_hp_bar = HpBar()
-        sprites_units.add(self.__max_hp_bar)
-        self.__current_hp_bar = CurrentHpBar()
-        sprites_units.add(self.__current_hp_bar)
+
+        self.bar_width = 50
+        self.bar_height = 8
+        self.hp_max = 2
+        self.hp_current = self.hp_max
+        self.max_hp_bar = None
+        self.current_hp_bar = None
+
         self.load()
-
-    def update(self):
-        """ Обновление состояния спрайта """
-        self.speed = move_dir(self.speed, self.rect.x, self.rect.y)
-        self.rect.x += self.speed[0] * self.speed[2]
-        self.rect.y += self.speed[1] * self.speed[2]
-
-        if tile_index(self.rect.x, self.rect.y) == 4:
-            self.__hp_current -= 1
-
-        self.__max_hp_bar.set_values(self.rect.x, self.rect.y, self.__bar_width, self.__bar_height)
-        self.__current_hp_bar.set_values(self.rect.x, self.rect.y, self.__bar_height, self.__hp_current, self.__hp_max)
-        # Умерли/ пошли весь путь
-        if tile_index(self.rect.x, self.rect.y) == 2 or self.__hp_current == 0:
-            sprites_units.remove(self.__max_hp_bar, self.__current_hp_bar)
-            self.kill()
 
     @abstractmethod
     def load(self):
+        """ Загрузка дополнительных параметров """
         pass
-
-
-class Soldier(pygame.sprite.Sprite):
-    """ Солдат """
-
-    def __init__(self, __coordinates: list):
-        pygame.sprite.Sprite.__init__(self)
-        self.image = pygame.image.load(os.path.join(img_folder, 'sprite.soldier.png')).convert()
-        self.image.set_colorkey(WHITE)
-        self.rect = self.image.get_rect()
-
-        # Х; Y; скорость, должна быть множителем 50 для корректной работы
-        self.speed = [1, 0, 2]
-        self.width = 50
-        self.height = 8
-        self.rect.x = __coordinates[0]
-        self.rect.y = __coordinates[1]
-        self.hp_max = 2
-        self.hp_current = self.hp_max
-
-        # Создание полоски здоровья
-        self.hp_bar = HpBar()
-        sprites_units.add(self.hp_bar)
-        self.current_hp_bar = CurrentHpBar()
-        sprites_units.add(self.current_hp_bar)
 
     def update(self):
         """ Обновление состояния спрайта """
@@ -318,61 +277,53 @@ class Soldier(pygame.sprite.Sprite):
         if tile_index(self.rect.x, self.rect.y) == 4:
             self.hp_current -= 1
 
-        self.hp_bar.set_values(self.rect.x, self.rect.y, self.width, self.height)
-        self.current_hp_bar.set_values(self.rect.x, self.rect.y, self.height, self.hp_current, self.hp_max)
+        sprites_units.remove(self.max_hp_bar)
+        self.max_hp_bar = HpBar(self.rect.x, self.rect.y, self.bar_width, self.bar_height)
+        sprites_units.add(self.max_hp_bar)
+
+        sprites_units.remove(self.current_hp_bar)
+        self.current_hp_bar = CurrentHpBar(self.rect.x, self.rect.y, self.bar_height, self.hp_current, self.hp_max)
+        sprites_units.add(self.current_hp_bar)
         # Умерли/ пошли весь путь
         if tile_index(self.rect.x, self.rect.y) == 2 or self.hp_current == 0:
-            sprites_units.remove(self.hp_bar, self.current_hp_bar)
+            sprites_units.remove(self.max_hp_bar, self.current_hp_bar)
             self.kill()
 
 
-class Skeleton(pygame.sprite.Sprite):
+class Soldier(UnitRoot):
+    """ Солдат """
+
+    def load(self):
+        self.image = pygame.image.load(os.path.join(img_folder, 'sprite.soldier.png')).convert()
+        self.image.set_colorkey(WHITE)
+        # Х; Y; скорость, должна быть множителем 50 для корректной работы
+        self.speed = [1, 0, 2]
+        self.bar_width = 50
+        self.bar_height = 8
+        self.hp_max = 3
+        self.hp_current = self.hp_max
+
+
+class Skeleton(UnitRoot):
     """ Скелет """
 
-    def __init__(self, __coordinates: list):
+    def load(self):
         pygame.sprite.Sprite.__init__(self)
         self.image = pygame.image.load(os.path.join(img_folder, 'sprite.skeleton.png')).convert()
         self.image.set_colorkey(WHITE)
-        self.rect = self.image.get_rect()
-
         # Х; Y; скорость, должна быть множителем 50 для корректной работы
         self.speed = [1, 0, 2]
-        self.width = 50
-        self.height = 8
-        self.rect.x = __coordinates[0]
-        self.rect.y = __coordinates[1]
+        self.bar_width = 50
+        self.bar_height = 8
+
         self.hp_max = 2
         self.hp_current = self.hp_max
-
-        # Создание полоски здоровья
-        self.hp_bar = HpBar()
-        sprites_units.add(self.hp_bar)
-        self.current_hp_bar = CurrentHpBar()
-        sprites_units.add(self.current_hp_bar)
-
-    def update(self):
-        """ Обновление состояния спрайта """
-        self.speed = move_dir(self.speed, self.rect.x, self.rect.y)
-        self.rect.x += self.speed[0] * self.speed[2]
-        self.rect.y += self.speed[1] * self.speed[2]
-
-        if tile_index(self.rect.x, self.rect.y) == 4:
-            self.hp_current -= 1
-
-        self.hp_bar.set_values(self.rect.x, self.rect.y, self.width, self.height)
-        self.current_hp_bar.set_values(self.rect.x, self.rect.y, self.height, self.hp_current, self.hp_max)
-        # Умерли/ пошли весь путь
-        if tile_index(self.rect.x, self.rect.y) == 2 or self.hp_current == 0:
-            sprites_units.remove(self.hp_bar, self.current_hp_bar)
-            self.kill()
 
 
 class HpBar(pygame.sprite.Sprite):
     """ Полоска здоровья 1-я часть """
-    def __init__(self):
+    def __init__(self, x: int, y: int, width: int, height: int):
         pygame.sprite.Sprite.__init__(self)
-
-    def set_values(self, x: int, y: int, width: int, height: int):
         self.image = pygame.Surface((width, height))
         self.image.fill(RED)
         self.rect = self.image.get_rect()
@@ -382,10 +333,8 @@ class HpBar(pygame.sprite.Sprite):
 
 class CurrentHpBar(pygame.sprite.Sprite):
     """ Полоска здоровья 2-я часть """
-    def __init__(self):
+    def __init__(self, x: int, y: int, height: int, hp_current: int, hp_max: int):
         pygame.sprite.Sprite.__init__(self)
-
-    def set_values(self, x: int, y: int, height: int, hp_current: int, hp_max: int):
         self.image = pygame.Surface(((hp_current / hp_max) * 50, height))
         self.image.fill(GREEN)
         self.rect = self.image.get_rect()
