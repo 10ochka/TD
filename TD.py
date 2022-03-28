@@ -41,6 +41,8 @@ track = [
 tick = 0
 current_unit_spawn = 0
 wave = True
+bar_width = 50
+bar_height = 8
 
 # Создаём игру и окно
 pygame.init()
@@ -58,7 +60,7 @@ class UnitWave:
     def __init__(self):
         # [[точка_спавна], [порядок_выхода_юнитов], интервал_между_появлением]
         self.wave_storage = {
-            '1': [get_random_spawn(), ['Soldier', 'Skeleton', 'Soldier'], 0.6, 2]
+            '1': [get_random_spawn(), [Soldier, Skeleton, Soldier], 0.6, 2]
         }
         self.__wave_length = 0
 
@@ -78,21 +80,10 @@ class UnitWave:
             if current_unit_spawn < self.__wave_length:
 
                 if (tick / FPS) == self.wave_storage[__wave_index][2]:
-
-                    if self.wave_storage[__wave_index][1][current_unit_spawn] == 'Soldier':
-                        __creating_unit = Soldier(__wave_spawnpoint)
-                        sprites_units.add(__creating_unit)
-                        tick = 0
-                        current_unit_spawn += 1
-
-                    elif self.wave_storage[__wave_index][1][current_unit_spawn] == 'Skeleton':
-                        __creating_unit = Skeleton(__wave_spawnpoint)
-                        sprites_units.add(__creating_unit)
-                        tick = 0
-                        current_unit_spawn += 1
-
-                    else:
-                        pass
+                    tmp_unit_type = self.wave_storage[__wave_index][1][current_unit_spawn]
+                    sprites_units.add(tmp_unit_type(__wave_spawnpoint))
+                    tick = 0
+                    current_unit_spawn += 1
 
             else:
                 wave = False
@@ -254,8 +245,8 @@ class UnitRoot(pygame.sprite.Sprite):
 
         self.speed = [1, 0, 2]
 
-        self.bar_width = 50
-        self.bar_height = 8
+        self.bar_width = bar_width
+        self.bar_height = bar_height
         self.hp_max = 2
         self.hp_current = self.hp_max
         self.max_hp_bar = None
@@ -298,8 +289,6 @@ class Soldier(UnitRoot):
         self.image.set_colorkey(WHITE)
         # Х; Y; скорость, должна быть множителем 50 для корректной работы
         self.speed = [1, 0, 2]
-        self.bar_width = 50
-        self.bar_height = 8
         self.hp_max = 3
         self.hp_current = self.hp_max
 
@@ -313,9 +302,6 @@ class Skeleton(UnitRoot):
         self.image.set_colorkey(WHITE)
         # Х; Y; скорость, должна быть множителем 50 для корректной работы
         self.speed = [1, 0, 2]
-        self.bar_width = 50
-        self.bar_height = 8
-
         self.hp_max = 2
         self.hp_current = self.hp_max
 
