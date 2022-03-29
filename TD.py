@@ -56,21 +56,39 @@ game_folder = os.path.dirname(__file__)
 img_folder = os.path.join(game_folder, 'img')
 
 
-class UnitWave:
+class UnitWave(pygame.sprite.Sprite):
     def __init__(self):
         # [[точка_спавна], [порядок_выхода_юнитов], интервал_между_появлением]
         self.wave_storage = {
             '1': [get_random_spawn(), [Soldier, Skeleton, Soldier], 0.6, 2]
         }
         self.__wave_length = 0
-
         self.__spawn_interval = 0
 
-    def wave_creator(self, __wave_index: int):
+        pygame.sprite.Sprite.__init__(self)
+        self.__button_height = 50
+        self.__button_width = 100
+        self.image = pygame.Surface((self.__button_width, self.__button_height))
+        self.image.fill(RED)
 
+        self.__button_position = {
+            'top-left': (0, 0),
+            'top-right': (WIDTH - self.__button_width, 0),
+            'bottom-left': (0, HEIGHT - self.__button_height),
+            'bottom-right': (WIDTH - self.__button_width, HEIGHT - self.__button_height),
+        }
+        self.rect = self.image.get_rect()
+        self.rect.x = self.__button_position['bottom-left'][0]
+        self.rect.y = self.__button_position['bottom-left'][1]
+        sprites_units.add(self)
+
+    def wave_creator(self, __wave_index: int):
         global tick
         global current_unit_spawn
 
+        __right_mouse_bottom_pressed = pygame.mouse.get_pressed()[0]
+        __mouse_position = pygame.mouse.get_pos()
+        __is_on_button = True if (self.rect.x <= __mouse_position[0] <= self.rect.x + self.__button_width and self.rect.y <= __mouse_position[1] <= self.rect.y + self.__button_height) else False
         __wave_index = str(__wave_index)
         __wave_spawnpoint = self.wave_storage[__wave_index][0]
         self.__wave_length = len(self.wave_storage[__wave_index][1])
@@ -89,10 +107,18 @@ class UnitWave:
                 wave = False
 
         else:
-            if pygame.key.get_pressed()[pygame.K_LEFT]:
+            if __right_mouse_bottom_pressed and __is_on_button:
                 wave = True
                 current_unit_spawn = 0
                 tick = 0
+
+    def load(self):
+        pass
+
+
+
+
+
 
 
 def tile_index(tmp_x: int, tmp_y: int):
@@ -343,6 +369,8 @@ class Map:
                 sprites_map.add(TilePointerLeft(__x, __y)) if tmp_tile == 6 else None
                 sprites_map.add(TilePointerUp(__x, __y)) if tmp_tile == 7 else None
                 sprites_map.add(TilePointerDown(__x, __y)) if tmp_tile == 8 else None
+
+
 
 
 class Game:
