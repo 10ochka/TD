@@ -27,20 +27,21 @@ GREY = (128, 128, 128)
 7 - тайл указателя, верх
 8 - тайл указателя, низ
 '''
+
 track = [
-            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 1, 3, 0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 3, 0, 3, 3, 3, 3, 3, 0],
-            [0, 0, 3, 0, 3, 0, 0, 0, 3, 0],
-            [0, 0, 5, 3, 4, 0, 3, 3, 8, 0],
-            [0, 0, 3, 0, 0, 0, 3, 0, 3, 0],
-            [0, 1, 3, 3, 3, 3, 4, 0, 2, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-        ]
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 1, 3, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 3, 0, 3, 3, 3, 3, 3, 0],
+    [0, 0, 3, 0, 3, 0, 0, 0, 3, 0],
+    [0, 0, 5, 3, 4, 0, 3, 3, 8, 0],
+    [0, 0, 3, 0, 0, 0, 3, 0, 3, 0],
+    [0, 1, 3, 3, 3, 3, 4, 0, 2, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+]
 
 tick = 0
 current_unit_spawn = 0
-wave = True
+wave = False
 bar_width = 50
 bar_height = 8
 
@@ -52,6 +53,7 @@ pygame.display.set_caption("Tower Defense")
 clock = pygame.time.Clock()
 sprites_units = pygame.sprite.Group()
 sprites_map = pygame.sprite.Group()
+sprites_buttons = pygame.sprite.Group()
 game_folder = os.path.dirname(__file__)
 img_folder = os.path.join(game_folder, 'img')
 
@@ -65,30 +67,12 @@ class UnitWave(pygame.sprite.Sprite):
         self.__wave_length = 0
         self.__spawn_interval = 0
 
-        pygame.sprite.Sprite.__init__(self)
-        self.__button_height = 50
-        self.__button_width = 100
-        self.image = pygame.Surface((self.__button_width, self.__button_height))
-        self.image.fill(RED)
-
-        self.__button_position = {
-            'top-left': (0, 0),
-            'top-right': (WIDTH - self.__button_width, 0),
-            'bottom-left': (0, HEIGHT - self.__button_height),
-            'bottom-right': (WIDTH - self.__button_width, HEIGHT - self.__button_height),
-        }
-        self.rect = self.image.get_rect()
-        self.rect.x = self.__button_position['bottom-left'][0]
-        self.rect.y = self.__button_position['bottom-left'][1]
-        sprites_units.add(self)
+        self.button = Button(None, 'Wave', RED, [500, 500])
 
     def wave_creator(self, __wave_index: int):
         global tick
         global current_unit_spawn
 
-        __right_mouse_bottom_pressed = pygame.mouse.get_pressed()[0]
-        __mouse_position = pygame.mouse.get_pos()
-        __is_on_button = True if (self.rect.x <= __mouse_position[0] <= self.rect.x + self.__button_width and self.rect.y <= __mouse_position[1] <= self.rect.y + self.__button_height) else False
         __wave_index = str(__wave_index)
         __wave_spawnpoint = self.wave_storage[__wave_index][0]
         self.__wave_length = len(self.wave_storage[__wave_index][1])
@@ -107,7 +91,7 @@ class UnitWave(pygame.sprite.Sprite):
                 wave = False
 
         else:
-            if __right_mouse_bottom_pressed and __is_on_button:
+            if self.button.get_pressed():
                 wave = True
                 current_unit_spawn = 0
                 tick = 0
@@ -116,9 +100,54 @@ class UnitWave(pygame.sprite.Sprite):
         pass
 
 
+class Text(pygame.sprite.Sprite):
+    def __init__(self, font, text, color, coordinates):
+        pygame.sprite.Sprite.__init__(self)
+        self.font = pygame.font.Font(font, 50)
+        self.image = self.font.render(text, True, color)
+        self.rect = self.image.get_rect()
+        self.rect.x = coordinates[0]
+        self.rect.y = coordinates[0]
+
+    def set_coordinates(self, coordinates):
+        self.rect.x = coordinates[0]
+        self.rect.y = coordinates[1]
 
 
+class Button(pygame.sprite.Sprite):
+    def __init__(self, font, text, color, coordinates):
+        pygame.sprite.Sprite.__init__(self)
+        self.text = Text(font, text, color, (0, 0))
+        self.text_rect = pygame.font.Font.size(self.text.font, text)
+        self.image = pygame.Surface(self.text_rect)
+        self.image.fill(YELLOW)
+        self.rect = self.image.get_rect()
+        self.__button_position = {
+            'top-left': (0, 0),
+            'top-right': (WIDTH - self.text_rect[0], 0),
+            'bottom-left': (0, HEIGHT - self.text_rect[1]),
+            'bottom-right': (WIDTH - self.text_rect[0], HEIGHT - self.text_rect[1]),
+        }
+        if type(coordinates) is str:
+            self.text.set_coordinates(self.__button_position[coordinates])
+            self.rect.x = self.__button_position[coordinates][0]
+            self.rect.y = self.__button_position[coordinates][1]
+        else:
+            self.text.set_coordinates(coordinates)
+            self.rect.x = coordinates[0]
+            self.rect.y = coordinates[1]
+        sprites_buttons.add(self)
+        sprites_buttons.add(self.text)
 
+    def get_pressed(self):
+        __right_mouse_bottom_pressed = pygame.mouse.get_pressed()[0]
+        __cursor_position = pygame.mouse.get_pos()
+        __on_button = True if (self.rect.x <= __cursor_position[0] <= self.rect.x + self.rect[0] and
+                               self.rect.y <= __cursor_position[1] <= self.rect.y + self.rect[1]) else False
+        if __right_mouse_bottom_pressed and __on_button:
+            return True
+        else:
+            return False
 
 
 def tile_index(tmp_x: int, tmp_y: int):
@@ -205,54 +234,63 @@ class TileRoot(pygame.sprite.Sprite):
 
 class TileSpawn(TileRoot):
     """ Тайл начала пути """
+
     def load(self):
         self.image = pygame.image.load(os.path.join(img_folder, 'tile.spawn.png')).convert()
 
 
 class TileEscape(TileRoot):
     """ Тайл конца пути """
+
     def load(self):
         self.image = pygame.image.load(os.path.join(img_folder, 'tile.escape.png')).convert()
 
 
 class TileForest(TileRoot):
     """ Тайл фона """
+
     def load(self):
         self.image = pygame.image.load(os.path.join(img_folder, 'tile.forest.png')).convert()
 
 
 class TilePathway(TileRoot):
     """ Тайл пути """
+
     def load(self):
         self.image = pygame.image.load(os.path.join(img_folder, 'tile.pathway.png')).convert()
 
 
 class TileDamage(TileRoot):
     """ Тайл, наносящий урон """
+
     def load(self):
         self.image = pygame.image.load(os.path.join(img_folder, 'tile.damage.png')).convert()
 
 
 class TilePointerRight(TileRoot):
     """ Указатель, право """
+
     def load(self):
         self.image = pygame.image.load(os.path.join(img_folder, 'tile.pointer.right.png')).convert()
 
 
 class TilePointerLeft(TileRoot):
     """ Указатель, лево """
+
     def load(self):
         self.image = pygame.image.load(os.path.join(img_folder, 'tile.pointer.left.png')).convert()
 
 
 class TilePointerUp(TileRoot):
     """ Указатель, верх """
+
     def load(self):
         self.image = pygame.image.load(os.path.join(img_folder, 'tile.pointer.up.png')).convert()
 
 
 class TilePointerDown(TileRoot):
     """ Указатель, низ """
+
     def load(self):
         self.image = pygame.image.load(os.path.join(img_folder, 'tile.pointer.down.png')).convert()
 
@@ -334,6 +372,7 @@ class Skeleton(UnitRoot):
 
 class HpBar(pygame.sprite.Sprite):
     """ Полоска здоровья 1-я часть """
+
     def __init__(self, x: int, y: int, width: int, height: int):
         pygame.sprite.Sprite.__init__(self)
         self.image = pygame.Surface((width, height))
@@ -345,6 +384,7 @@ class HpBar(pygame.sprite.Sprite):
 
 class CurrentHpBar(pygame.sprite.Sprite):
     """ Полоска здоровья 2-я часть """
+
     def __init__(self, x: int, y: int, height: int, hp_current: int, hp_max: int):
         pygame.sprite.Sprite.__init__(self)
         self.image = pygame.Surface(((hp_current / hp_max) * 50, height))
@@ -356,6 +396,7 @@ class CurrentHpBar(pygame.sprite.Sprite):
 
 class Map:
     """ Создание карты """
+
     def map_creator(self):
         for __y in range(len(track)):
             for __x in range(len(track[0])):
@@ -371,10 +412,9 @@ class Map:
                 sprites_map.add(TilePointerDown(__x, __y)) if tmp_tile == 8 else None
 
 
-
-
 class Game:
     """ Основной цикл игры"""
+
     def run(self):
         Map().map_creator()
 
@@ -399,6 +439,7 @@ class Game:
             screen.fill(WHITE)
             sprites_map.draw(screen)
             sprites_units.draw(screen)
+            sprites_buttons.draw(screen)
 
             # После отрисовки всего, переворачиваем экран
             pygame.display.flip()
