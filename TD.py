@@ -1,8 +1,8 @@
-from abc import abstractmethod
-
-import pygame
-import random
 import os
+import random
+from abc import abstractmethod
+from map_config import *
+import pygame
 
 WIDTH = 1000
 HEIGHT = 700
@@ -58,7 +58,7 @@ game_folder = os.path.dirname(__file__)
 img_folder = os.path.join(game_folder, 'img')
 
 
-class UnitWave(pygame.sprite.Sprite):
+class UnitWave:
     def __init__(self):
         # [[точка_спавна], [порядок_выхода_юнитов], интервал_между_появлением]
         self.wave_storage = {
@@ -67,7 +67,7 @@ class UnitWave(pygame.sprite.Sprite):
         self.__wave_length = 0
         self.__spawn_interval = 0
 
-        self.button = Button(None, 'Wave', RED, [500, 500])
+        self.button = Button(None, 'Wave', RED, [600, 400])
 
     def wave_creator(self, __wave_index: int):
         global tick
@@ -123,10 +123,10 @@ class Button(pygame.sprite.Sprite):
         self.image.fill(YELLOW)
         self.rect = self.image.get_rect()
         self.__button_position = {
-            'top-left': (0, 0),
-            'top-right': (WIDTH - self.text_rect[0], 0),
-            'bottom-left': (0, HEIGHT - self.text_rect[1]),
-            'bottom-right': (WIDTH - self.text_rect[0], HEIGHT - self.text_rect[1]),
+            'top-left': [0, 0],
+            'top-right': [WIDTH - self.text_rect[0], 0],
+            'bottom-left': [0, HEIGHT - self.text_rect[1]],
+            'bottom-right': [WIDTH - self.text_rect[0], HEIGHT - self.text_rect[1]],
         }
         if type(coordinates) is str:
             self.text.set_coordinates(self.__button_position[coordinates])
@@ -212,87 +212,6 @@ def get_random_spawn():
                 random_spawn_list.append([x, y])
     random_spawn = random.choice(random_spawn_list)
     return [random_spawn[0] * 50, random_spawn[1] * 50]
-
-
-''' Конструктор карты '''
-
-
-class TileRoot(pygame.sprite.Sprite):
-    def __init__(self, x: int, y: int):
-        pygame.sprite.Sprite.__init__(self)
-        self.image = pygame.image.load(os.path.join(img_folder, 'tile.stopgap.png')).convert()
-        self.rect = self.image.get_rect()
-        self.rect.x = 50 * x
-        self.rect.y = 50 * y
-        self.load()
-
-    @abstractmethod
-    def load(self):
-        """ Загрузка дополнительных параметров """
-        pass
-
-
-class TileSpawn(TileRoot):
-    """ Тайл начала пути """
-
-    def load(self):
-        self.image = pygame.image.load(os.path.join(img_folder, 'tile.spawn.png')).convert()
-
-
-class TileEscape(TileRoot):
-    """ Тайл конца пути """
-
-    def load(self):
-        self.image = pygame.image.load(os.path.join(img_folder, 'tile.escape.png')).convert()
-
-
-class TileForest(TileRoot):
-    """ Тайл фона """
-
-    def load(self):
-        self.image = pygame.image.load(os.path.join(img_folder, 'tile.forest.png')).convert()
-
-
-class TilePathway(TileRoot):
-    """ Тайл пути """
-
-    def load(self):
-        self.image = pygame.image.load(os.path.join(img_folder, 'tile.pathway.png')).convert()
-
-
-class TileDamage(TileRoot):
-    """ Тайл, наносящий урон """
-
-    def load(self):
-        self.image = pygame.image.load(os.path.join(img_folder, 'tile.damage.png')).convert()
-
-
-class TilePointerRight(TileRoot):
-    """ Указатель, право """
-
-    def load(self):
-        self.image = pygame.image.load(os.path.join(img_folder, 'tile.pointer.right.png')).convert()
-
-
-class TilePointerLeft(TileRoot):
-    """ Указатель, лево """
-
-    def load(self):
-        self.image = pygame.image.load(os.path.join(img_folder, 'tile.pointer.left.png')).convert()
-
-
-class TilePointerUp(TileRoot):
-    """ Указатель, верх """
-
-    def load(self):
-        self.image = pygame.image.load(os.path.join(img_folder, 'tile.pointer.up.png')).convert()
-
-
-class TilePointerDown(TileRoot):
-    """ Указатель, низ """
-
-    def load(self):
-        self.image = pygame.image.load(os.path.join(img_folder, 'tile.pointer.down.png')).convert()
 
 
 ''' Конструктор юнитов '''
@@ -397,23 +316,30 @@ class CurrentHpBar(pygame.sprite.Sprite):
 class Map:
     """ Создание карты """
 
+    def __init__(self):
+        self.tiles = {
+            0: TileForest,
+            1: TileSpawn,
+            2: TileEscape,
+            3: TilePathway,
+            4: TileDamage,
+            5: TilePointerRight,
+            6: TilePointerLeft,
+            7: TilePointerUp,
+            8: TilePointerDown
+        }
+
     def map_creator(self):
         for __y in range(len(track)):
             for __x in range(len(track[0])):
                 tmp_tile = track[__y][__x]
-                sprites_map.add(TileForest(__x, __y)) if tmp_tile == 0 else None
-                sprites_map.add(TileSpawn(__x, __y)) if tmp_tile == 1 else None
-                sprites_map.add(TileEscape(__x, __y)) if tmp_tile == 2 else None
-                sprites_map.add(TilePathway(__x, __y)) if tmp_tile == 3 else None
-                sprites_map.add(TileDamage(__x, __y)) if tmp_tile == 4 else None
-                sprites_map.add(TilePointerRight(__x, __y)) if tmp_tile == 5 else None
-                sprites_map.add(TilePointerLeft(__x, __y)) if tmp_tile == 6 else None
-                sprites_map.add(TilePointerUp(__x, __y)) if tmp_tile == 7 else None
-                sprites_map.add(TilePointerDown(__x, __y)) if tmp_tile == 8 else None
+                sprites_map.add(self.tiles[tmp_tile](__x, __y))
 
 
 class Game:
     """ Основной цикл игры"""
+    def __init__(self):
+        self.a = 0
 
     def run(self):
         Map().map_creator()
