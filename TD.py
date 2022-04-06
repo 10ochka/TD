@@ -1,7 +1,7 @@
 import os
 import random
 from abc import abstractmethod
-from map_config import *
+from map_tiles import *
 import pygame
 
 WIDTH = 1000
