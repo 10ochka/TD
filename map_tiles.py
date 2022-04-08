@@ -7,16 +7,13 @@ from abc import abstractmethod
 
 
 class TileRoot(pygame.sprite.Sprite):
+
+    _IMAGE_DIR = ""
+
     def __init__(self, x: int, y: int):
         pygame.sprite.Sprite.__init__(self)
-        self.image_dir = ""
-        self.get_path(self)
-        self.tile_path = [
-            'spawn', 'escape', 'forest', 'pathway', 'damage',
-            'pointer.right', 'pointer.left', 'pointer.up', 'pointer.down'
-        ]
-        self.tile_path = [os.path.join(self.image_dir, 'tile.' + i + '.png') for i in self.tile_path]
-        self.image = pygame.image.load(os.path.join(self.image_dir, 'tile.stopgap.png')).convert()
+        self.load_path()
+        self.image = pygame.image.load(os.path.join(self._IMAGE_DIR, 'tile.stopgap.png')).convert()
         self.rect = self.image.get_rect()
         self.rect.x = self.rect[2] * x
         self.rect.y = self.rect[2] * y
@@ -27,71 +24,69 @@ class TileRoot(pygame.sprite.Sprite):
         """ Загрузка дополнительных параметров """
         pass
 
-    @staticmethod
-    def get_path(self):
-        if self.image_dir == "":
-            self.image_dir = os.path.join(os.path.dirname(__file__), 'img')
-        return self.image_dir
+    def load_path(self):
+        if TileRoot._IMAGE_DIR == "":
+            TileRoot._IMAGE_DIR = os.path.join(os.path.dirname(__file__), 'img')
 
 
 class TileSpawn(TileRoot):
     """ Тайл начала пути """
 
     def load(self):
-        self.image = pygame.image.load(self.tile_path[0])
+        self.image = pygame.image.load(os.path.join(TileRoot._IMAGE_DIR, 'tile.spawn.png'))
 
 
 class TileEscape(TileRoot):
     """ Тайл конца пути """
 
     def load(self):
-        self.image = pygame.image.load(self.tile_path[1])
+        self.image = pygame.image.load(os.path.join(TileRoot._IMAGE_DIR, 'tile.escape.png'))
 
 
 class TileForest(TileRoot):
     """ Тайл фона """
 
     def load(self):
-        self.image = pygame.image.load(self.tile_path[2])
+        self.image = pygame.image.load(os.path.join(TileRoot._IMAGE_DIR, 'tile.forest.png'))
 
 
 class TilePathway(TileRoot):
     """ Тайл пути """
 
     def load(self):
-        self.image = pygame.image.load(self.tile_path[3])
+        self.image = pygame.image.load(os.path.join(TileRoot._IMAGE_DIR, 'tile.pathway.png'))
 
 
 class TileDamage(TileRoot):
     """ Тайл, наносящий урон """
 
     def load(self):
-        self.image = pygame.image.load(self.tile_path[4])
+        self.image = pygame.image.load(os.path.join(TileRoot._IMAGE_DIR, 'tile.damage.png'))
 
 
 class TilePointerRight(TileRoot):
     """ Указатель, право """
 
     def load(self):
-        self.image = pygame.image.load(self.tile_path[5])
+        self.image = pygame.image.load(os.path.join(TileRoot._IMAGE_DIR, 'tile.pointer.right.png'))
 
 
 class TilePointerLeft(TileRoot):
     """ Указатель, лево """
 
     def load(self):
-        self.image = pygame.image.load(self.tile_path[6])
+        self.image = pygame.image.load(os.path.join(TileRoot._IMAGE_DIR, 'tile.pointer.left.png'))
 
 
 class TilePointerUp(TileRoot):
     """ Указатель, верх """
 
     def load(self):
-        self.image = pygame.image.load(self.tile_path[7])
+        self.image = pygame.image.load(os.path.join(TileRoot._IMAGE_DIR, 'tile.pointer.up.png'))
 
 
 class TilePointerDown(TileRoot):
     """ Указатель, низ """
 
     def load(self):
-        self.image = pygame.image.load(self.tile_path[8])
+        self.image = pygame.image.load(os.path.join(TileRoot._IMAGE_DIR, 'tile.pointer.down.png'))
